@@ -42,8 +42,9 @@ async function update(user) {
         // pick only updatable fields!
         const userToSave = {
             _id: new ObjectId(user._id),
-
+            jobs: user.jobs,
             fullName: user.fullName,
+            userName: user.userName
         }
 
         const collection = await dbService.getCollection('user')
@@ -66,7 +67,7 @@ async function add(user) {
             userName: user.userName,
             password: user.password,
             fullName: user.fullName,
-
+            jobs: user.jobs || []
         }
         const collection = await dbService.getCollection('user')
         await collection.insertOne(userToAdd)
