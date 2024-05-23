@@ -2,8 +2,22 @@ import { userService } from './user.service.js'
 import { logger } from '../../services/logger.service.js'
 
 export async function getUser(req, res) {
+    const nameInputValue = req.query.params.filterBy.txt
+    const statusInputValue = req.query.params.filterBy.status
+    const jobTypeInputValue = req.query.params.filterBy.jobType
+    const sortBySubject = req.query.params.sortBy.subject
     try {
-        const user = await userService.getById(req.params.id)
+        const filterBy = {
+            txt: nameInputValue || '',
+            status: statusInputValue || '',
+            jobType: jobTypeInputValue || ''
+        }
+        const sortBy = {
+            subject: sortBySubject
+        }
+        const user = await userService.getById(req.params.id, filterBy, sortBy)
+        // console.log(user)
+        // filter here
         res.send(user)
     } catch (err) {
         logger.error('Failed to get user', err)
