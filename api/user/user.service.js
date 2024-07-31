@@ -19,11 +19,22 @@ async function getById(userId, filterBy = { txt: '', status: '', jobType: '' }, 
         const jobFilters = []
         if (filterBy.txt) {
             jobFilters.push({
-                $regexMatch: {
-                    input: "$$job.position",
-                    regex: filterBy.txt,
-                    options: 'i' // Case-insensitive search
-                }
+                $or: [
+                    {
+                        $regexMatch: {
+                            input: "$$job.position",
+                            regex: filterBy.txt,
+                            options: 'i' // Case-insensitive search
+                        }
+                    },
+                    {
+                        $regexMatch: {
+                            input: "$$job.company",
+                            regex: filterBy.txt,
+                            options: 'i' // Case-insensitive search
+                        }
+                    }
+                ]
             })
         }
         if (filterBy.status) {
