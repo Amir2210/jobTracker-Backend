@@ -1,10 +1,12 @@
 import express from 'express'
 
-import { getUser, updateUser } from './user.controller.js'
+import { getJobsByUserId, addJob, deleteJob, updateJob } from './user.controller.js'
 
 export const userRoutes = express.Router()
 
-userRoutes.get('/:id', getUser)
-userRoutes.put('/:id', updateUser)
+userRoutes.get('/:id', getJobsByUserId)
+userRoutes.put('/:id/addJob', addJob)
+userRoutes.put('/:id/deleteJob', deleteJob)
+userRoutes.put('/:id/updateJob', updateJob)
 
 

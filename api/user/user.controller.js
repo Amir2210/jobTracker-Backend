@@ -1,22 +1,23 @@
 import { userService } from './user.service.js'
 import { logger } from '../../services/logger.service.js'
 
-export async function getUser(req, res) {
+export async function getJobsByUserId(req, res) {
     const nameInputValue = req.query.params.filterBy.txt
     const statusInputValue = req.query.params.filterBy.status
     const jobTypeInputValue = req.query.params.filterBy.jobType
     const sortBySubject = req.query.params.sortBy.subject
+    const pageIdxInputValue = req.query.params.filterBy.pageIdx
     try {
         const filterBy = {
             txt: nameInputValue || '',
             status: statusInputValue || '',
-            jobType: jobTypeInputValue || ''
+            jobType: jobTypeInputValue || '',
+            pageIdx: pageIdxInputValue || 0
         }
         const sortBy = {
             subject: sortBySubject
         }
         const user = await userService.getById(req.params.id, filterBy, sortBy)
-        // console.log(user)
         // filter here
         res.send(user)
     } catch (err) {
@@ -25,11 +26,43 @@ export async function getUser(req, res) {
     }
 }
 
-export async function updateUser(req, res) {
+export async function deleteJob(req, res) {
     try {
-        const user = req.body
-        console.log('user:', user)
-        const savedUser = await userService.update(user)
+        const data = req.body
+        if (!data.jobId) {
+            throw new Error('no jobId provided...')
+        } else {
+            const savedUser = await userService.deleteJob(data)
+            res.send(savedUser)
+        }
+    } catch (error) {
+        logger.error('Failed to update user', err)
+        res.status(500).send({ err: 'Failed to update user' })
+    }
+
+}
+
+export async function updateJob(req, res) {
+    try {
+        const data = req.body
+        if (!data.jobId) {
+            throw new Error('no jobId provided...')
+        } else {
+            const jobToSave = data.jobs.find((job) => job._id === data.jobId)
+            const userId = data._id
+            const savedUser = await userService.updateJob(jobToSave, userId)
+            res.send(savedUser)
+        }
+    } catch (err) {
+        logger.error('Failed to update user', err)
+        res.status(500).send({ err: 'Failed to update user' })
+    }
+}
+
+export async function addJob(req, res) {
+    try {
+        const data = req.body
+        const savedUser = await userService.addJob(data)
         res.send(savedUser)
     } catch (err) {
         logger.error('Failed to update user', err)
