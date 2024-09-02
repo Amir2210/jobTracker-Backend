@@ -17,7 +17,7 @@ export async function getJobsByUserId(req, res) {
         const sortBy = {
             subject: sortBySubject
         }
-        const user = await userService.getById(req.params.id, filterBy, sortBy)
+        const user = await userService.getJobsByUserId(req.params.id, filterBy, sortBy)
         // filter here
         res.send(user)
     } catch (err) {

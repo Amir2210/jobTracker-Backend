@@ -7,7 +7,7 @@ const { ObjectId } = mongodb
 const PAGE_SIZE = 10
 
 export const userService = {
-    getById,
+    getJobsByUserId,
     getByuserName,
     addJob,
     deleteJob,
@@ -111,7 +111,7 @@ export const userService = {
 //     }
 // }
 
-async function getById(userId, filterBy = { txt: '', status: '', jobType: '', pageIdx: 0 }, sortBy = { subject: '' }) {
+async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType: '', pageIdx: 0 }, sortBy = { subject: '' }) {
     const skip = filterBy.pageIdx * PAGE_SIZE;
     const limit = PAGE_SIZE;
 
@@ -158,6 +158,7 @@ async function getById(userId, filterBy = { txt: '', status: '', jobType: '', pa
                     _id: 1,
                     userName: 1,
                     fullName: 1,
+                    allJobs: "$jobs",
                     jobs: {
                         $filter: {
                             input: "$jobs",
@@ -190,6 +191,7 @@ async function getById(userId, filterBy = { txt: '', status: '', jobType: '', pa
                     _id: 1,
                     userName: 1,
                     fullName: 1,
+                    allJobs: 1,
                     totalFilteredJobs: 1,
                     jobs: { $slice: ["$jobs", skip, limit] } // Apply pagination
                 }
@@ -198,6 +200,7 @@ async function getById(userId, filterBy = { txt: '', status: '', jobType: '', pa
 
         // Execute the aggregation pipeline and convert the result to an array.
         const [user] = await collection.aggregate(pipeline).toArray();
+        console.log('user:', user)
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
         }
@@ -205,6 +208,7 @@ async function getById(userId, filterBy = { txt: '', status: '', jobType: '', pa
         // Return the user along with the totalFilteredJobs and paginated jobs
         return {
             ...user,
+            allJobs: user.allJobs,
             totalFilteredJobs: user.totalFilteredJobs,
             jobs: user.jobs,
         };
