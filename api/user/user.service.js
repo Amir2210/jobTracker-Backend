@@ -200,7 +200,6 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
 
         // Execute the aggregation pipeline and convert the result to an array.
         const [user] = await collection.aggregate(pipeline).toArray();
-        console.log('user:', user)
         if (!user) {
             throw new Error(`User with ID ${userId} not found`);
         }
