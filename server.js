@@ -46,7 +46,7 @@ app.get('/**', (req, res) => {
   res.sendFile(path.resolve('public/index.html'))
 })
 
-cron.schedule('* * * * *', async () => { // Runs every minute for testing
+cron.schedule("0 0 * * *", async () => { // Runs every minute for testing
   try {
     const db = await dbService.getCollection('user') // ✅ Get the "users" collection
     const twentyOneDaysAgo = new Date()
