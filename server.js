@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
+import cron from 'node-cron'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -37,12 +38,37 @@ app.use('/api/auth', authRoutes)
 
 
 import { userRoutes } from './api/user/user.routes.js'
+import { dbService } from './services/db.service.js'
 app.use('/api/user', userRoutes)
 
 
 app.get('/**', (req, res) => {
   res.sendFile(path.resolve('public/index.html'))
 })
+
+cron.schedule('* * * * *', async () => { // Runs every minute for testing
+  try {
+    const db = await dbService.getCollection('user') // ✅ Get the "users" collection
+    const twentyOneDaysAgo = new Date()
+    twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 21)
+
+
+    const result = await db.updateMany(
+      { "jobs.status": "pending", "jobs.time": { $lte: twentyOneDaysAgo.getTime() } }, // ✅ Match old pending jobs
+      { $set: { "jobs.$[job].status": "Ghosting" } }, // ✅ Only update matching jobs
+      { arrayFilters: [{ "job.status": "pending", "job.time": { $lte: twentyOneDaysAgo.getTime() } }] } // ✅ Ensure only old pending jobs are updated
+    )
+
+    if (result.modifiedCount > 0) {
+      console.log(`✅ Updated ${result.modifiedCount} jobs to 'ghosting'`)
+    } else {
+      console.log('⚠️ No jobs older than 21 days found.')
+    }
+  } catch (error) {
+    logger.error('❌ Error updating job statuses:', error)
+  }
+})
+
 
 const port = process.env.PORT || 3030
 
