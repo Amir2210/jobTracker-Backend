@@ -8,7 +8,14 @@ export async function login(req, res) {
         const loginToken = authService.getLoginToken(user)
 
         logger.info('User login: ', user)
-        res.cookie('loginToken', loginToken)
+        // Prevents XSS attacks by making the cookie inaccessible to JavaScript.
+        // secure: true ensures cookies are only sent over HTTPS in production.
+        // sameSite: 'strict' mitigates CSRF attacks.
+        res.cookie('loginToken', loginToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
+            sameSite: 'strict'
+        });
 
         res.json(user)
     } catch (err) {
@@ -31,7 +38,11 @@ export async function signup(req, res) {
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
 
-        res.cookie('loginToken', loginToken)
+        res.cookie('loginToken', loginToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
+            sameSite: 'strict'
+        });
         res.json(user)
         console.log('ccc', loginToken, user)
     } catch (err) {
