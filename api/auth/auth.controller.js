@@ -3,6 +3,16 @@ import { logger } from '../../services/logger.service.js'
 
 export async function login(req, res) {
     const { userName, password } = req.body
+
+    // Username validation
+    if (!userName || !/^[a-zA-Z0-9_]{3,15}$/.test(userName)) {
+        return res.status(400).json({ err: 'Username must be 3-15 characters (letters, numbers only).' });
+    }
+
+    // Password validation (at least 6 characters, allowing special characters)
+    if (!password || password.length < 3) {
+        return res.status(400).json({ err: 'Password must be at least 3 characters long.' });
+    }
     try {
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
