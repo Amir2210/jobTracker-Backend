@@ -3,9 +3,9 @@ import { login, signup, logout } from './auth.controller.js'
 import rateLimit from 'express-rate-limit';
 
 const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
+  windowMs: 5 * 60 * 1000, // 5 minute
   max: 5, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests, please try again later.'
+  message: 'Too many login attempts. Please try again in 5 minutes.'
 });
 
 export const authRoutes = express.Router()
