@@ -69,7 +69,6 @@ cron.schedule("0 0 * * *", async () => { // run once a day at midnight
   }
 })
 
-
 const port = process.env.PORT || 3030
 
 app.listen(port, () => {

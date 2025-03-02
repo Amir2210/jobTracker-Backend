@@ -1,9 +1,9 @@
 import { authService } from './auth.service.js'
 import { logger } from '../../services/logger.service.js'
-
+import axios from 'axios'
 export async function login(req, res) {
-    const { userName, password } = req.body
-
+    const { userName, password, recaptchaToken } = req.body
+    const secretKey = '6LdmGeIqAAAAAKl5jIazfpuL7DK1e4HiTjy9g1a6'
     // Username validation
     if (!userName || !/^[a-zA-Z0-9_]{3,15}$/.test(userName)) {
         return res.status(400).json({ err: 'Username must be 3-15 characters (letters, numbers only).' });
@@ -14,6 +14,13 @@ export async function login(req, res) {
         return res.status(400).json({ err: 'Password must be at least 3 characters long.' });
     }
     try {
+        const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`)
+
+        // ✅ Check if reCAPTCHA was successful
+        if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5) {
+            console.log('fail!!!!!!')
+            return res.status(403).json({ err: 'reCAPTCHA verification failed' });
+        }
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
 
@@ -27,6 +34,35 @@ export async function login(req, res) {
             sameSite: 'strict'
         });
 
+        res.json(user)
+    } catch (err) {
+        logger.error('Failed to Login ' + err)
+        res.status(401).send({ err: 'Failed to Login' })
+    }
+}
+export async function demoLogin(req, res) {
+    const { userName, password } = req.body
+    // Username validation
+    if (!userName || !/^[a-zA-Z0-9_]{3,15}$/.test(userName)) {
+        return res.status(400).json({ err: 'Username must be 3-15 characters (letters, numbers only).' });
+    }
+    // Password validation (at least 6 characters, allowing special characters)
+    if (!password || password.length < 3) {
+        return res.status(400).json({ err: 'Password must be at least 3 characters long.' });
+    }
+
+    try {
+        const user = await authService.login(userName, password)
+        const loginToken = authService.getLoginToken(user)
+        logger.info('User login: ', user)
+        // Prevents XSS attacks by making the cookie inaccessible to JavaScript.
+        // secure: true ensures cookies are only sent over HTTPS in production.
+        // sameSite: 'strict' mitigates CSRF attacks.
+        res.cookie('loginToken', loginToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
+            sameSite: 'strict'
+        });
         res.json(user)
     } catch (err) {
         logger.error('Failed to Login ' + err)
