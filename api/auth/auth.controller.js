@@ -3,7 +3,8 @@ import { logger } from '../../services/logger.service.js'
 import axios from 'axios'
 export async function login(req, res) {
     const { userName, password, recaptchaToken } = req.body
-    const secretKey = '6LdmGeIqAAAAAKl5jIazfpuL7DK1e4HiTjy9g1a6'
+    const secretKey = process.env.RECAPTCHA_SECRET
+    console.log(secretKey)
     // Username validation
     if (!userName || !/^[a-zA-Z0-9_]{3,15}$/.test(userName)) {
         return res.status(400).json({ err: 'Username must be 3-15 characters (letters, numbers only).' });
