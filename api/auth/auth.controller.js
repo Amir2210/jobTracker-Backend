@@ -4,7 +4,7 @@ import axios from 'axios'
 export async function login(req, res) {
     const { userName, password, recaptchaToken } = req.body
     const secretKey = process.env.RECAPTCHA_SECRET
-    console.log(secretKey)
+    console.log('recaptchaToken:', recaptchaToken)
     // Username validation
     if (!userName || !/^[a-zA-Z0-9_]{3,15}$/.test(userName)) {
         return res.status(400).json({ err: 'Username must be 3-15 characters (letters, numbers only).' });
@@ -19,7 +19,7 @@ export async function login(req, res) {
 
         // ✅ Check if reCAPTCHA was successful
         if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5) {
-            console.log('fail!!!!!!')
+            console.log('failololo!!!!!!')
             return res.status(403).json({ err: 'reCAPTCHA verification failed' });
         }
         const user = await authService.login(userName, password)
@@ -72,13 +72,11 @@ export async function demoLogin(req, res) {
 }
 
 export async function signup(req, res) {
+    const { userName, password, fullName } = req.body
     try {
-        const { userName, password, fullName } = req.body
-
         // IMPORTANT!!! 
         // Never write passwords to log file!!!
         // logger.debug(fullName + ', ' + userName + ', ' + password)
-
         const account = await authService.signup(userName, password, fullName)
         logger.debug(`auth.route - new account created: ` + JSON.stringify(account))
 
@@ -91,7 +89,6 @@ export async function signup(req, res) {
             sameSite: 'strict'
         });
         res.json(user)
-        console.log('ccc', loginToken, user)
     } catch (err) {
         logger.error('Failed to signup ' + err)
         res.status(500).send({ err: 'Failed to signup' })
