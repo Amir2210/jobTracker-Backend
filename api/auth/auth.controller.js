@@ -16,9 +16,7 @@ export async function login(req, res) {
     try {
         const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`)
 
-        // ✅ Check if reCAPTCHA was successful
         if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5) {
-            console.log('failololo!!!!!!')
             return res.status(403).json({ err: 'reCAPTCHA verification failed' });
         }
         const user = await authService.login(userName, password)
