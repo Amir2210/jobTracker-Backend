@@ -160,12 +160,17 @@ async function removeJobFromFavorite(data) {
 async function updateJob(jobToSave, userId) {
     try {
         const collection = await dbService.getCollection('user');
-
         // Update the first job in the array
         await collection.updateOne(
             { _id: new ObjectId(userId), "jobs._id": (jobToSave._id) },
             { $set: { "jobs.$": jobToSave } } // Update the first element
-        );
+        )
+        if (jobToSave.isFavorite) {
+            await collection.updateOne(
+                { _id: new ObjectId(userId), "jobs._id": (jobToSave._id) },
+                { $set: { "favoriteJobs.$": jobToSave } } // Update the first element
+            )
+        }
         return { jobToSave };
     } catch (err) {
         logger.error(`cannot update user ${jobToSave._id}`, err);
