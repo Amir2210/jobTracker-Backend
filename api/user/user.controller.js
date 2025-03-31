@@ -39,7 +39,20 @@ export async function deleteJob(req, res) {
         logger.error('Failed to update user', err)
         res.status(500).send({ err: 'Failed to update user' })
     }
-
+}
+export async function removeJobFromFavorite(req, res) {
+    try {
+        const data = req.body
+        if (!data.jobId) {
+            throw new Error('no jobId provided...')
+        } else {
+            const savedUser = await userService.removeJobFromFavorite(data)
+            res.send(savedUser)
+        }
+    } catch (error) {
+        logger.error('Failed to update user', err)
+        res.status(500).send({ err: 'Failed to update user' })
+    }
 }
 
 export async function updateJob(req, res) {
@@ -68,6 +81,16 @@ export async function addJob(req, res) {
             return res.status(403).json({ err: 'reCAPTCHA verification failed' });
         }
         const savedUser = await userService.addJob(data)
+        res.send(savedUser)
+    } catch (err) {
+        logger.error('Failed to update user', err)
+        res.status(500).send({ err: 'Failed to update user' })
+    }
+}
+export async function addJobToFavorite(req, res) {
+    try {
+        const data = req.body
+        const savedUser = await userService.addJobToFavorite(data)
         res.send(savedUser)
     } catch (err) {
         logger.error('Failed to update user', err)
