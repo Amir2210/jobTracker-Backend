@@ -68,10 +68,16 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
                     fullName: 1,
                     allJobs: "$jobs",
                     favoriteJobs: {
-                        $filter: {
-                            input: { $ifNull: ["$favoriteJobs", []] },
-                            as: "job",
-                            cond: { $ne: ["$$job", null] } // Remove null values
+                        $cond: {
+                            if: { $isArray: "$favoriteJobs" }, // Ensure it's an array
+                            then: {
+                                $filter: {
+                                    input: "$favoriteJobs",
+                                    as: "job",
+                                    cond: { $ne: ["$$job", null] } // Remove null values
+                                }
+                            },
+                            else: [] // If `favoriteJobs` is missing or not an array, return an empty array
                         }
                     },
                     jobs: {
