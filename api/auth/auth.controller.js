@@ -1,6 +1,7 @@
 import { authService } from './auth.service.js'
 import { logger } from '../../services/logger.service.js'
 import axios from 'axios'
+
 export async function login(req, res) {
     const { userName, password, recaptchaToken } = req.body
     const secretKey = process.env.RECAPTCHA_SECRET

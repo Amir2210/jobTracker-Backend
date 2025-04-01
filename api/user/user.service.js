@@ -13,8 +13,6 @@ export const userService = {
     deleteJob,
     updateJob,
     add,
-    addJobToFavorite,
-    removeJobFromFavorite
 }
 
 
@@ -71,19 +69,6 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
                     userName: 1,
                     fullName: 1,
                     allJobs: "$jobs",
-                    // favoriteJobs: {
-                    //     $cond: {
-                    //         if: { $isArray: "$favoriteJobs" }, // Ensure it's an array
-                    //         then: {
-                    //             $filter: {
-                    //                 input: "$favoriteJobs",
-                    //                 as: "job",
-                    //                 cond: { $ne: ["$$job", null] } // Remove null values
-                    //             }
-                    //         },
-                    //         else: [] // If `favoriteJobs` is missing or not an array, return an empty array
-                    //     }
-                    // },
                     jobs: {
                         $filter: {
                             input: "$jobs",
@@ -158,20 +143,6 @@ async function deleteJob(data) {
         throw err;
     }
 }
-async function removeJobFromFavorite(data) {
-    try {
-        const collection = await dbService.getCollection('user');
-        // Update the first job in the array
-        await collection.updateOne(
-            { _id: new ObjectId(data._id) },
-            { $pull: { "favoriteJobs": { _id: data.jobId } } } // Update the first element
-        )
-        return { data };
-    } catch (err) {
-        logger.error(`cannot update user ${data._id}`, err);
-        throw err;
-    }
-}
 
 async function updateJob(jobToSave, userId) {
     try {
@@ -208,28 +179,6 @@ async function addJob(data) {
         throw err;
     }
 }
-async function addJobToFavorite(data) {
-    try {
-        const collection = await dbService.getCollection('user');
-        await collection.updateOne(
-            { _id: new ObjectId(data._id) },
-            {
-                $push: {
-                    favoriteJobs: {
-                        $each: [data.newJob],
-                        $position: 0
-                    }
-                }
-            }
-        )
-        return { data };
-    } catch (err) {
-        logger.error(`cannot update user ${data._id}`, err);
-        throw err;
-    }
-}
-
-
 
 //add new user
 async function add(user) {
