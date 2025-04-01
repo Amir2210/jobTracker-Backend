@@ -19,7 +19,7 @@ export const userService = {
 
 
 
-async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType: '', pageIdx: 0 }, sortBy = { subject: '' }) {
+async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType: '', pageIdx: 0, isFavoriteShow: false }, sortBy = { subject: '' }) {
     const skip = filterBy.pageIdx * PAGE_SIZE;
     const limit = PAGE_SIZE;
 
@@ -59,6 +59,10 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
             });
         }
 
+        if (filterBy.isFavoriteShow) {
+            jobFilters.push({ $eq: ["$$job.isFavorite", true] });
+        }
+
         const pipeline = [
             { $match: { _id: new ObjectId(userId) } },
             {
@@ -67,19 +71,19 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
                     userName: 1,
                     fullName: 1,
                     allJobs: "$jobs",
-                    favoriteJobs: {
-                        $cond: {
-                            if: { $isArray: "$favoriteJobs" }, // Ensure it's an array
-                            then: {
-                                $filter: {
-                                    input: "$favoriteJobs",
-                                    as: "job",
-                                    cond: { $ne: ["$$job", null] } // Remove null values
-                                }
-                            },
-                            else: [] // If `favoriteJobs` is missing or not an array, return an empty array
-                        }
-                    },
+                    // favoriteJobs: {
+                    //     $cond: {
+                    //         if: { $isArray: "$favoriteJobs" }, // Ensure it's an array
+                    //         then: {
+                    //             $filter: {
+                    //                 input: "$favoriteJobs",
+                    //                 as: "job",
+                    //                 cond: { $ne: ["$$job", null] } // Remove null values
+                    //             }
+                    //         },
+                    //         else: [] // If `favoriteJobs` is missing or not an array, return an empty array
+                    //     }
+                    // },
                     jobs: {
                         $filter: {
                             input: "$jobs",
@@ -114,7 +118,7 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
                     fullName: 1,
                     allJobs: 1,
                     totalFilteredJobs: 1,
-                    favoriteJobs: 1,
+                    // favoriteJobs: 1,
                     jobs: { $slice: ["$jobs", skip, limit] } // Apply pagination
                 }
             }
@@ -132,7 +136,7 @@ async function getJobsByUserId(userId, filterBy = { txt: '', status: '', jobType
             allJobs: user.allJobs,
             totalFilteredJobs: user.totalFilteredJobs,
             jobs: user.jobs,
-            favoriteJobs: user.favoriteJobs
+            // favoriteJobs: user.favoriteJobs
         };
     } catch (err) {
         logger.error(`while finding user ${userId}`, err);
@@ -177,12 +181,6 @@ async function updateJob(jobToSave, userId) {
             { _id: new ObjectId(userId), "jobs._id": (jobToSave._id) },
             { $set: { "jobs.$": jobToSave } } // Update the first element
         )
-        if (jobToSave.isFavorite) {
-            await collection.updateOne(
-                { _id: new ObjectId(userId), "jobs._id": (jobToSave._id) },
-                { $set: { "favoriteJobs.$": jobToSave } } // Update the first element
-            )
-        }
         return { jobToSave };
     } catch (err) {
         logger.error(`cannot update user ${jobToSave._id}`, err);

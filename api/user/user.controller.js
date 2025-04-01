@@ -7,12 +7,14 @@ export async function getJobsByUserId(req, res) {
     const jobTypeInputValue = req.query.params.filterBy.jobType
     const sortBySubject = req.query.params.sortBy.subject
     const pageIdxInputValue = req.query.params.filterBy.pageIdx
+    const isFavoriteShowValue = req.query.params.filterBy.isFavoriteShow === 'true' ? true : false
     try {
         const filterBy = {
             txt: nameInputValue || '',
             status: statusInputValue || '',
             jobType: jobTypeInputValue || '',
-            pageIdx: pageIdxInputValue || 0
+            pageIdx: pageIdxInputValue || 0,
+            isFavoriteShow: isFavoriteShowValue || false
         }
         const sortBy = {
             subject: sortBySubject

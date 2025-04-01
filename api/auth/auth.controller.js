@@ -22,7 +22,8 @@ export async function login(req, res) {
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
 
-        logger.info('User login: ', user)
+        // logger.info('User login: ', user)
+
         // Prevents XSS attacks by making the cookie inaccessible to JavaScript.
         // secure: true ensures cookies are only sent over HTTPS in production.
         // sameSite: 'strict' mitigates CSRF attacks.
@@ -52,7 +53,7 @@ export async function demoLogin(req, res) {
     try {
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
-        logger.info('User login: ', user)
+        // logger.info('User login: ', user)
         // Prevents XSS attacks by making the cookie inaccessible to JavaScript.
         // secure: true ensures cookies are only sent over HTTPS in production.
         // sameSite: 'strict' mitigates CSRF attacks.
