@@ -15,10 +15,13 @@ export async function login(req, res) {
         return res.status(400).json({ err: 'Password must be at least 3 characters long.' });
     }
     try {
-        const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`)
+        // Skip reCAPTCHA verification outside of production (e.g. local dev)
+        if (process.env.NODE_ENV === 'production') {
+            const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`)
 
-        if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5) {
-            return res.status(403).json({ err: 'reCAPTCHA verification failed' });
+            if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5) {
+                return res.status(403).json({ err: 'reCAPTCHA verification failed' });
+            }
         }
         const user = await authService.login(userName, password)
         const loginToken = authService.getLoginToken(user)
